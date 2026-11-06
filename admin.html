@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>प्रोफेशनल ई-स्पोर्ट्स कंट्रोल पैनल (PCR)</title>
+    <title>Professional Esports Control Panel (PCR)</title>
     <style>
         :root { --base-offwhite: #f4f4f6; --teal-bright: #00b4d8; --yellow-light: #ffb703; --black-pure: #121214; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--base-offwhite); background-image: radial-gradient(rgba(0, 180, 216, 0.08) 1px, transparent 0), radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 0); background-size: 24px 24px; background-position: 0 0, 12px 12px; color: var(--black-pure); margin: 0; padding: 0; overflow-x: hidden; }
@@ -38,30 +38,30 @@
 </head>
 <body>
 
-    <!-- 🔐 लॉगिन गेटवे -->
+    <!-- 🔐 LOGIN GATEWAY -->
     <div id="loginScreen" class="login-screen">
         <div class="box-inner">
-            <h3 style="margin-top:0;"> PCR सिस्टम लॉगिन</h3>
-            <input type="text" id="userInput" placeholder="यूज़रनेम">
-            <input type="password" id="passInput" placeholder="पासवर्ड">
-            <button onclick="checkCredentials()" style="width:100%; padding:10px; background:var(--teal-bright); border:none; font-weight:bold; cursor:pointer; border-radius:4px;">लॉगिन करें</button>
+            <h3 style="margin-top:0;">PCR SYSTEM LOGIN</h3>
+            <input type="text" id="userInput" placeholder="Username">
+            <input type="password" id="passInput" placeholder="Password">
+            <button onclick="checkCredentials()" style="width:100%; padding:10px; background:var(--teal-bright); border:none; font-weight:bold; cursor:pointer; border-radius:4px;">LOGIN</button>
             <p id="errMsg" style="color:red; font-size:12px; margin-top:10px;"></p>
         </div>
     </div>
 
-    <!-- 🧮 मैथ-लॉक कन्फर्मेशन -->
+    <!-- 🧮 MATH-LOCK POPUP -->
     <div id="mathPopup" class="math-popup" style="display:none;">
         <div class="box-inner">
-            <h3 id="mathTitle">सुरक्षा सत्यापन</h3>
-            <p>आगे बढ़ने के लिए गणित का उत्तर दें:</p>
+            <h3 id="mathTitle">Security Verification</h3>
+            <p>Solve the equation to proceed:</p>
             <p id="mathExp" style="font-size:22px; font-weight:bold; color:#d68c00;"></p>
-            <input type="number" id="mathAns" placeholder="उत्तर दर्ज करें">
-            <button onclick="executeAction()" style="width:100%; padding:10px; background:#c62828; color:white; border:none; font-weight:bold; cursor:pointer; border-radius:4px;">पुष्टि करें</button>
-            <button onclick="closeMath()" style="width:100%; padding:10px; background:#78909c; color:white; border:none; font-weight:bold; cursor:pointer; border-radius:4px; margin-top:5px;">रद्द करें</button>
+            <input type="number" id="mathAns" placeholder="Enter Answer">
+            <button onclick="executeAction()" style="width:100%; padding:10px; background:#c62828; color:white; border:none; font-weight:bold; cursor:pointer; border-radius:4px;">CONFIRM</button>
+            <button onclick="closeMath()" style="width:100%; padding:10px; background:#78909c; color:white; border:none; font-weight:bold; cursor:pointer; border-radius:4px; margin-top:5px;">CANCEL</button>
         </div>
     </div>
 
-    <!-- 🎛️ टॉप नेविगेशन बार -->
+    <!-- 🎛️ TOP NAVIGATION BAR -->
     <div class="top-bar">
         <button class="settings-toggle-btn" onclick="toggleSettings()">⚙️ Settings PANEL</button>
         <div style="font-weight:bold; color:var(--yellow-light);" id="globalTimerDisplay">SESSION VALID</div>
@@ -69,33 +69,33 @@
     </div>
 
     <div class="main-layout">
-        <!-- ⚙️ सीक्रेट सेटिंग्स पैनल -->
+        <!-- ⚙️ SETTINGS PANEL -->
         <div id="settingsPanel" class="settings-panel">
-            <h3 style="margin-top:0; border-bottom:2px solid var(--base-offwhite); padding-bottom:5px;">कंट्रोल सेटिंग्स</h3>
+            <h3 style="margin-top:0; border-bottom:2px solid var(--base-offwhite); padding-bottom:5px;">Control Settings</h3>
             <div class="panel-block">
-                <h4>🤝 अस्थायी क्रेडेंशियल (Temp ID)</h4>
+                <h4>🤝 Temporary Access (Temp ID)</h4>
                 <select id="durationSelect" style="width:100%; padding:6px; margin-bottom:5px;">
-                    <option value="21600000">6 घंटे (6 Hours)</option>
-                    <option value="86400000">1 दिन (1 Day)</option>
-                    <option value="604800000">1 हफ्ता (1 Week)</option>
+                    <option value="21600000">6 Hours</option>
+                    <option value="86400000">1 Day</option>
+                    <option value="604800000">1 Week</option>
                 </select>
-                <button onclick="genTempID()" style="width:100%; padding:8px; background:var(--teal-bright); border:none; font-weight:bold; cursor:pointer; border-radius:4px;">जनरेट करें</button>
-                <button onclick="killTempID()" style="width:100%; padding:6px; background:#c62828; color:white; border:none; font-weight:bold; cursor:pointer; border-radius:4px; margin-top:5px;">Kill Access (डिसेबल)</button>
+                <button onclick="genTempID()" style="width:100%; padding:8px; background:var(--teal-bright); border:none; font-weight:bold; cursor:pointer; border-radius:4px;">GENERATE</button>
+                <button onclick="killTempID()" style="width:100%; padding:6px; background:#c62828; color:white; border:none; font-weight:bold; cursor:pointer; border-radius:4px; margin-top:5px;">Kill Access</button>
                 <div id="tempView" style="margin-top:8px; font-size:11px; font-family:monospace; background:white; padding:5px; word-break:break-all;"></div>
             </div>
             <div class="panel-block">
-                <h4>🔑 एडमिन पासवर्ड बदलें</h4>
-                <input type="password" id="newAdminPass" placeholder="नया मास्टर पासवर्ड" style="width:100%; padding:6px; margin-bottom:5px; box-sizing:border-box;">
-                <button onclick="changeMasterPass()" style="width:100%; padding:8px; background:var(--black-pure); color:white; border:none; font-weight:bold; cursor:pointer; border-radius:4px;">अपडेट पासवर्ड</button>
+                <h4>🔑 Change Admin Password</h4>
+                <input type="password" id="newAdminPass" placeholder="New Master Password" style="width:100%; padding:6px; margin-bottom:5px; box-sizing:border-box;">
+                <button onclick="changeMasterPass()" style="width:100%; padding:8px; background:var(--black-pure); color:white; border:none; font-weight:bold; cursor:pointer; border-radius:4px;">UPDATE PASSWORD</button>
             </div>
             <div class="panel-block">
-                <h4>🛑 ग्लोबल मैच एक्शन</h4>
+                <h4>🛑 Global Match Action</h4>
                 <button onclick="triggerMath('match')" style="width:100%; padding:8px; background:var(--yellow-light); border:none; font-weight:bold; cursor:pointer; border-radius:4px; margin-bottom:5px;">New Match</button>
                 <button onclick="triggerMath('reset')" style="width:100%; padding:8px; background:#c62828; color:white; border:none; font-weight:bold; cursor:pointer; border-radius:4px;">Reset Tournament</button>
             </div>
         </div>
 
-        <!-- 📊 खिलाड़ियों का मास्टर ग्रिड ज़ोन -->
+        <!-- 📊 20-TEAMS MASTER GRID -->
         <div class="content-area">
             <div class="grid-container" id="cardsGrid"></div>
         </div>
@@ -135,3 +135,4 @@
         function checkCredentials() {
             let u = document.getElementById('userInput').value.trim();
             let p = document.getElementById('passInput').value.trim();
+            let mPass = localStorage.getItem('pcr_master_pass');
