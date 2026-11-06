@@ -9,37 +9,28 @@
         .top-bar { background: var(--black-pure); color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); position: sticky; top: 0; z-index: 100; }
         .settings-toggle-btn { background: var(--teal-bright); color: var(--black-pure); font-weight: bold; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .main-layout { display: flex; height: calc(100vh - 54px); position: relative; }
-        
-        /* ⚙️ साइड सेटिंग्स पैनल */
         .settings-panel { width: 320px; background: #ffffff; border-right: 2px solid #e1e1e6; padding: 20px; box-sizing: border-box; transition: all 0.3s ease; overflow-y: auto; z-index: 90; box-shadow: 4px 0 10px rgba(0,0,0,0.02); }
         .settings-panel.hidden { width: 0; padding: 0; border-right: none; overflow: hidden; }
-        
-        /* 📊 डायनेमिक प्लेयर्स कार्ड ग्रिड */
         .content-area { flex: 1; padding: 20px; overflow-y: auto; transition: all 0.3s ease; }
         .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 20px; }
         .settings-panel.hidden + .content-area .grid-container { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
-        
         .team-card { background: #ffffff; border: 2px solid #e1e1e6; border-radius: 6px; padding: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); transition: border-color 0.2s; }
         .team-card:hover { border-color: var(--teal-bright); }
         .team-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4f4f6; padding-bottom: 8px; margin-bottom: 10px; }
         .team-header input { font-size: 16px; font-weight: bold; border: none; background: transparent; color: var(--black-pure); width: 60%; }
         .team-header input:focus { border-bottom: 2px solid var(--teal-bright); outline: none; }
-        
         .player-row { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
         .status-grp { display: flex; gap: 2px; }
         .status-btn { border: 1px solid #e1e1e6; background: #ffffff; padding: 6px 10px; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 11px; }
         .btn-a.active { background: #2e7d32; color: white; border-color: #2e7d32; }
         .btn-k.active { background: #c62828; color: white; border-color: #c62828; animation: blink 0.6s infinite alternate; }
         .btn-d.active { background: #78909c; color: white; border-color: #78909c; }
-        
         .points-box { display: flex; gap: 5px; align-items: center; background: var(--base-offwhite); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
         .points-box span { color: #d68c00; font-size: 14px; }
         .pts-btn { background: #ffffff; border: 1px solid #e1e1e6; border-radius: 3px; cursor: pointer; font-weight: bold; width: 22px; height: 22px; display: flex; justify-content: center; align-items: center; }
-        
         .login-screen, .math-popup { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(18,18,20,0.98); display:flex; justify-content:center; align-items:center; z-index: 1000; }
         .box-inner { background: #ffffff; padding: 30px; border-radius: 8px; width: 340px; border: 1px solid #e1e1e6; text-align: center; }
         .box-inner input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #e1e1e6; border-radius: 4px; box-sizing: border-box; }
-        
         .panel-block { background: var(--base-offwhite); padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #e1e1e6; }
         .panel-block h4 { margin: 0 0 8px 0; color: var(--black-pure); }
         @keyframes blink { from { opacity: 1; } to { opacity: 0.6; } }
@@ -78,10 +69,9 @@
     </div>
 
     <div class="main-layout">
-        <!-- ⚙️ सीक्रेट सेटिंग्स पैनल (टेंपरेरी क्रेडेंशियल + पासवर्ड चेंज + ग्लोबल कंट्रोल्स) -->
+        <!-- ⚙️ सीक्रेट सेटिंग्स पैनल -->
         <div id="settingsPanel" class="settings-panel">
             <h3 style="margin-top:0; border-bottom:2px solid var(--base-offwhite); padding-bottom:5px;">कंट्रोल सेटिंग्स</h3>
-            
             <div class="panel-block">
                 <h4>🤝 अस्थायी क्रेडेंशियल (Temp ID)</h4>
                 <select id="durationSelect" style="width:100%; padding:6px; margin-bottom:5px;">
@@ -91,15 +81,13 @@
                 </select>
                 <button onclick="genTempID()" style="width:100%; padding:8px; background:var(--teal-bright); border:none; font-weight:bold; cursor:pointer; border-radius:4px;">जनरेट करें</button>
                 <button onclick="killTempID()" style="width:100%; padding:6px; background:#c62828; color:white; border:none; font-weight:bold; cursor:pointer; border-radius:4px; margin-top:5px;">Kill Access (डिसेबल)</button>
-                <div id="tempView" style="margin-top:8px; font-size:11px; font-family:monospace; background:#white; padding:5px; word-break:break-all;"></div>
+                <div id="tempView" style="margin-top:8px; font-size:11px; font-family:monospace; background:white; padding:5px; word-break:break-all;"></div>
             </div>
-
             <div class="panel-block">
                 <h4>🔑 एडमिन पासवर्ड बदलें</h4>
                 <input type="password" id="newAdminPass" placeholder="नया मास्टर पासवर्ड" style="width:100%; padding:6px; margin-bottom:5px; box-sizing:border-box;">
                 <button onclick="changeMasterPass()" style="width:100%; padding:8px; background:var(--black-pure); color:white; border:none; font-weight:bold; cursor:pointer; border-radius:4px;">अपडेट पासवर्ड</button>
             </div>
-
             <div class="panel-block">
                 <h4>🛑 ग्लोबल मैच एक्शन</h4>
                 <button onclick="triggerMath('match')" style="width:100%; padding:8px; background:var(--yellow-light); border:none; font-weight:bold; cursor:pointer; border-radius:4px; margin-bottom:5px;">New Match</button>
@@ -107,7 +95,7 @@
             </div>
         </div>
 
-        <!-- 📊 खिलाड़ियों का मास्टर ग्रिड ज़ोन (डायनेमिक स्पेसिंग) -->
+        <!-- 📊 खिलाड़ियों का मास्टर ग्रिड ज़ोन -->
         <div class="content-area">
             <div class="grid-container" id="cardsGrid"></div>
         </div>
@@ -117,6 +105,10 @@
         let db = [];
         let pendingAction = "";
         let currentTargetAns = 0;
+
+        if (!localStorage.getItem('pcr_master_pass')) {
+            localStorage.setItem('pcr_master_pass', 'bgmi2026');
+        }
 
         function toggleSettings() { document.getElementById('settingsPanel').classList.toggle('hidden'); }
 
@@ -133,8 +125,13 @@
                 }
                 sync();
             }
-            if(!localStorage.getItem('pcr_master_pass')) { localStorage.setItem('pcr_master_pass', 'bgmi2026'); }
         }
 
         function sync() {
             localStorage.setItem('pcr_master_db', JSON.stringify(db));
+            localStorage.setItem('pcr_sys_sync', Date.now());
+        }
+
+        function checkCredentials() {
+            let u = document.getElementById('userInput').value.trim();
+            let p = document.getElementById('passInput').value.trim();
