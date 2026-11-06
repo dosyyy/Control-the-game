@@ -2,137 +2,152 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Professional Esports Control Panel (PCR)</title>
+    <title>PCR Live Dashboard</title>
     <style>
-        :root { --base-offwhite: #f4f4f6; --teal-bright: #00b4d8; --yellow-light: #ffb703; --black-pure: #121214; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--base-offwhite); background-image: radial-gradient(rgba(0, 180, 216, 0.08) 1px, transparent 0), radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 0); background-size: 24px 24px; background-position: 0 0, 12px 12px; color: var(--black-pure); margin: 0; padding: 0; overflow-x: hidden; }
-        .top-bar { background: var(--black-pure); color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); position: sticky; top: 0; z-index: 100; }
-        .settings-toggle-btn { background: var(--teal-bright); color: var(--black-pure); font-weight: bold; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .main-layout { display: flex; height: calc(100vh - 54px); position: relative; }
-        .settings-panel { width: 320px; background: #ffffff; border-right: 2px solid #e1e1e6; padding: 20px; box-sizing: border-box; transition: all 0.3s ease; overflow-y: auto; z-index: 90; box-shadow: 4px 0 10px rgba(0,0,0,0.02); }
-        .settings-panel.hidden { width: 0; padding: 0; border-right: none; overflow: hidden; }
-        .content-area { flex: 1; padding: 20px; overflow-y: auto; transition: all 0.3s ease; }
+        :root { --offwhite: #f4f4f6; --teal: #00b4d8; --yellow: #ffb703; --black: #121214; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--offwhite); margin: 0; padding: 0; }
+        .top-bar { background: var(--black); color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .toggle-btn { background: var(--teal); color: var(--black); font-weight: bold; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+        .main-layout { display: flex; height: calc(100vh - 54px); }
+        .settings-panel { width: 320px; background: #ffffff; border-right: 2px solid #e1e1e6; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        .settings-panel.hidden { display: none; }
+        .content-area { flex: 1; padding: 20px; overflow-y: auto; }
         .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 20px; }
-        .settings-panel.hidden + .content-area .grid-container { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
-        .team-card { background: #ffffff; border: 2px solid #e1e1e6; border-radius: 6px; padding: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); transition: border-color 0.2s; }
-        .team-card:hover { border-color: var(--teal-bright); }
-        .team-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4f4f6; padding-bottom: 8px; margin-bottom: 10px; }
-        .team-header input { font-size: 16px; font-weight: bold; border: none; background: transparent; color: var(--black-pure); width: 60%; }
-        .team-header input:focus { border-bottom: 2px solid var(--teal-bright); outline: none; }
+        .team-card { background: #ffffff; border: 2px solid #e1e1e6; border-radius: 6px; padding: 15px; }
+        .team-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4f4f6; padding-bottom: 8px; }
+        .team-header input { font-size: 16px; font-weight: bold; border: none; width: 60%; }
         .player-row { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
-        .status-grp { display: flex; gap: 2px; }
-        .status-btn { border: 1px solid #e1e1e6; background: #ffffff; padding: 6px 10px; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 11px; }
-        .btn-a.active { background: #2e7d32; color: white; border-color: #2e7d32; }
-        .btn-k.active { background: #c62828; color: white; border-color: #c62828; animation: blink 0.6s infinite alternate; }
-        .btn-d.active { background: #78909c; color: white; border-color: #78909c; }
-        .points-box { display: flex; gap: 5px; align-items: center; background: var(--base-offwhite); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-        .points-box span { color: #d68c00; font-size: 14px; }
-        .pts-btn { background: #ffffff; border: 1px solid #e1e1e6; border-radius: 3px; cursor: pointer; font-weight: bold; width: 22px; height: 22px; display: flex; justify-content: center; align-items: center; }
-        .login-screen, .math-popup { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(18,18,20,0.98); display:flex; justify-content:center; align-items:center; z-index: 1000; }
-        .box-inner { background: #ffffff; padding: 30px; border-radius: 8px; width: 340px; border: 1px solid #e1e1e6; text-align: center; }
+        .status-grp button { border: 1px solid #e1e1e6; background: #ffffff; padding: 6px 10px; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        .status-grp .btn-a.active { background: #2e7d32; color: white; }
+        .status-grp .btn-k.active { background: #c62828; color: white; }
+        .status-grp .btn-d.active { background: #78909c; color: white; }
+        .points-box { display: flex; gap: 5px; align-items: center; }
+        .pts-btn { background: #ffffff; border: 1px solid #e1e1e6; width: 22px; height: 22px; cursor: pointer; }
+        .login-screen, .math-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(18,18,20,0.98); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .box-inner { background: #ffffff; padding: 30px; border-radius: 8px; width: 340px; text-align: center; }
         .box-inner input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #e1e1e6; border-radius: 4px; box-sizing: border-box; }
-        .panel-block { background: var(--base-offwhite); padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #e1e1e6; }
-        .panel-block h4 { margin: 0 0 8px 0; color: var(--black-pure); }
-        @keyframes blink { from { opacity: 1; } to { opacity: 0.6; } }
+        .panel-block { background: var(--offwhite); padding: 12px; border-radius: 6px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
-    <!-- 🔐 LOGIN GATEWAY -->
-    <div id="loginScreen" class="login-screen">
-        <div class="box-inner">
-            <h3 style="margin-top:0;">PCR SYSTEM LOGIN</h3>
-            <input type="text" id="userInput" placeholder="Username">
-            <input type="password" id="passInput" placeholder="Password">
-            <button onclick="checkCredentials()" style="width:100%; padding:10px; background:var(--teal-bright); border:none; font-weight:bold; cursor:pointer; border-radius:4px;">LOGIN</button>
-            <p id="errMsg" style="color:red; font-size:12px; margin-top:10px;"></p>
+<!-- LOGIN GATEWAY -->
+<div id="loginScreen" class="login-screen">
+    <div class="box-inner">
+        <h3>PCR MASTER LOGIN</h3>
+        <input type="text" id="userInput" placeholder="Username">
+        <input type="password" id="passInput" placeholder="Password">
+        <button onclick="checkCredentials()" style="width:100%; padding:10px; background:var(--teal); border:none; font-weight:bold; cursor:pointer;">LOGIN</button>
+        <p id="errMsg" style="color:red; font-size:12px;"></p>
+    </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="top-bar">
+    <button class="toggle-btn" onclick="toggleSettings()">⚙️ Settings PANEL</button>
+    <div style="font-weight:bold; color:var(--yellow);" id="globalTimerDisplay">MASTER ADMIN CONTROL</div>
+    <div style="font-size:14px; opacity:0.8;">Active Dashboard</div>
+</div>
+
+<div class="main-layout">
+    <div id="settingsPanel" class="settings-panel">
+        <h3>Dashboard Controls</h3>
+        <div class="panel-block">
+            <h4>🤝 Temporary Access Generator</h4>
+            <select id="durationSelect" style="width:100%; padding:6px; margin-bottom:5px;">
+                <option value="21600000">6 Hours</option>
+                <option value="86400000">1 Day</option>
+                <option value="604800000">1 Week</option>
+            </select>
+            <button onclick="genTempID()" style="width:100%; padding:8px; background:var(--teal); border:none; font-weight:bold; cursor:pointer;">GENERATE ACCESS</button>
+            <button onclick="killTempID()" style="width:100%; padding:6px; background:#c62828; color:white; border:none; margin-top:5px; cursor:pointer;">KILL ACCESS</button>
+            <div id="tempView" style="margin-top:8px; font-size:12px; font-family:monospace; background:white; padding:5px;"></div>
         </div>
     </div>
 
-    <!-- 🧮 MATH-LOCK POPUP -->
-    <div id="mathPopup" class="math-popup" style="display:none;">
-        <div class="box-inner">
-            <h3 id="mathTitle">Security Verification</h3>
-            <p>Solve the equation to proceed:</p>
-            <p id="mathExp" style="font-size:22px; font-weight:bold; color:#d68c00;"></p>
-            <input type="number" id="mathAns" placeholder="Enter Answer">
-            <button onclick="executeAction()" style="width:100%; padding:10px; background:#c62828; color:white; border:none; font-weight:bold; cursor:pointer; border-radius:4px;">CONFIRM</button>
-            <button onclick="closeMath()" style="width:100%; padding:10px; background:#78909c; color:white; border:none; font-weight:bold; cursor:pointer; border-radius:4px; margin-top:5px;">CANCEL</button>
-        </div>
+    <div class="content-area">
+        <div class="grid-container" id="cardsGrid"></div>
     </div>
+</div>
 
-    <!-- 🎛️ TOP NAVIGATION BAR -->
-    <div class="top-bar">
-        <button class="settings-toggle-btn" onclick="toggleSettings()">⚙️ Settings PANEL</button>
-        <div style="font-weight:bold; color:var(--yellow-light);" id="globalTimerDisplay">SESSION VALID</div>
-        <div style="font-size:14px; opacity:0.8;">Live Control Dashboard</div>
-    </div>
+<script>
+    let db = [];
+    
+    // लोकल बाईपास: बिना लोकल स्टोरेज एरर के लॉगिन को हमेशा के लिए ऑन रखना
+    function checkCredentials() {
+        let u = document.getElementById('userInput').value.trim();
+        let p = document.getElementById('passInput').value.trim();
 
-    <div class="main-layout">
-        <!-- ⚙️ SETTINGS PANEL -->
-        <div id="settingsPanel" class="settings-panel">
-            <h3 style="margin-top:0; border-bottom:2px solid var(--base-offwhite); padding-bottom:5px;">Control Settings</h3>
-            <div class="panel-block">
-                <h4>🤝 Temporary Access (Temp ID)</h4>
-                <select id="durationSelect" style="width:100%; padding:6px; margin-bottom:5px;">
-                    <option value="21600000">6 Hours</option>
-                    <option value="86400000">1 Day</option>
-                    <option value="604800000">1 Week</option>
-                </select>
-                <button onclick="genTempID()" style="width:100%; padding:8px; background:var(--teal-bright); border:none; font-weight:bold; cursor:pointer; border-radius:4px;">GENERATE</button>
-                <button onclick="killTempID()" style="width:100%; padding:6px; background:#c62828; color:white; border:none; font-weight:bold; cursor:pointer; border-radius:4px; margin-top:5px;">Kill Access</button>
-                <div id="tempView" style="margin-top:8px; font-size:11px; font-family:monospace; background:white; padding:5px; word-break:break-all;"></div>
-            </div>
-            <div class="panel-block">
-                <h4>🔑 Change Admin Password</h4>
-                <input type="password" id="newAdminPass" placeholder="New Master Password" style="width:100%; padding:6px; margin-bottom:5px; box-sizing:border-box;">
-                <button onclick="changeMasterPass()" style="width:100%; padding:8px; background:var(--black-pure); color:white; border:none; font-weight:bold; cursor:pointer; border-radius:4px;">UPDATE PASSWORD</button>
-            </div>
-            <div class="panel-block">
-                <h4>🛑 Global Match Action</h4>
-                <button onclick="triggerMath('match')" style="width:100%; padding:8px; background:var(--yellow-light); border:none; font-weight:bold; cursor:pointer; border-radius:4px; margin-bottom:5px;">New Match</button>
-                <button onclick="triggerMath('reset')" style="width:100%; padding:8px; background:#c62828; color:white; border:none; font-weight:bold; cursor:pointer; border-radius:4px;">Reset Tournament</button>
-            </div>
-        </div>
-
-        <!-- 📊 20-TEAMS MASTER GRID -->
-        <div class="content-area">
-            <div class="grid-container" id="cardsGrid"></div>
-        </div>
-    </div>
-
-    <script>
-        let db = [];
-        let pendingAction = "";
-        let currentTargetAns = 0;
-
-        if (!localStorage.getItem('pcr_master_pass')) {
-            localStorage.setItem('pcr_master_pass', 'bgmi2026');
+        if (u === "admin" && p === "bgmi2026") { 
+            document.getElementById('loginScreen').style.display = "none";
+            initDatabase();
+            renderDashboard();
+        } else { 
+            document.getElementById('errMsg').innerText = "Access Denied!"; 
         }
+    }
 
-        function toggleSettings() { document.getElementById('settingsPanel').classList.toggle('hidden'); }
+    function toggleSettings() { 
+        document.getElementById('settingsPanel').classList.toggle('hidden'); 
+    }
 
-        function initDatabase() {
-            let cached = localStorage.getItem('pcr_master_db');
-            if (cached) { db = JSON.parse(cached); } else {
-                db = [];
-                for(let i=1; i<=20; i++) {
-                    db.push({
-                        slot: i, name: "Team " + i, logo: "", kills: 0, rosters: 4,
-                        players: ["Player 1", "Player 2", "Player 3", "Player 4"],
-                        status: ["alive", "alive", "alive", "alive"]
-                    });
-                }
-                sync();
+    function initDatabase() {
+        db = [];
+        for(let i=1; i<=20; i++) {
+            db.push({
+                slot: i, name: "Team " + i, logo: "", kills: 0, rosters: 4,
+                players: ["Player 1", "Player 2", "Player 3", "Player 4"],
+                status: ["alive", "alive", "alive", "alive"]
+            });
+        }
+    }
+
+    function renderDashboard() {
+        let g = document.getElementById('cardsGrid'); 
+        if(!g) return;
+        g.innerHTML = "";
+        db.forEach((team, tIdx) => {
+            let card = document.createElement('div'); 
+            card.className = "team-card";
+            card.innerHTML = `
+                <div class="team-header">
+                    <input type="text" value="${team.name}" onchange="db[${tIdx}].name=this.value; saveLocal();">
+                    <div class="points-box">Kills: <button class="pts-btn" onclick="addKill(${tIdx},-1)">-</button><span id="k-${tIdx}">${team.kills}</span><button class="pts-btn" onclick="addKill(${tIdx},1)">+</button></div>
+                </div>
+            `;
+            for(let p=0; p<team.rosters; p++) {
+                let st = team.status[p];
+                card.innerHTML += `
+                    <div class="player-row">
+                        <span style="font-size:13px;">Player ${p+1}</span>
+                        <div class="status-grp">
+                            <button class="btn-a ${st==='alive'?'active':''}" onclick="setPlayerState(${tIdx},${p},'alive')">A</button>
+                            <button class="btn-k ${st==='knock'?'active':''}" onclick="setPlayerState(${tIdx},${p},'knock')">K</button>
+                            <button class="btn-d ${st==='dead'?'active':''}" onclick="setPlayerState(${tIdx},${p},'dead')">D</button>
+                        </div>
+                    </div>
+                `;
             }
-        }
+            g.appendChild(card);
+        });
+    }
 
-        function sync() {
-            localStorage.setItem('pcr_master_db', JSON.stringify(db));
-            localStorage.setItem('pcr_sys_sync', Date.now());
-        }
+    function addKill(idx, val) { 
+        db[idx].kills = Math.max(0, db[idx].kills + val); 
+        document.getElementById("k-" + idx).innerText = db[idx].kills;
+        saveLocal();
+    }
+    
+    function setPlayerState(tIdx, pIdx, state) { 
+        db[tIdx].status[pIdx] = state; 
+        saveLocal();
+        renderDashboard(); 
+    }
 
-        function checkCredentials() {
-            let u = document.getElementById('userInput').value.trim();
-            let p = document.getElementById('passInput').value.trim();
-            let mPass = localStorage.getItem('pcr_master_pass');
+    function saveLocal() {
+        localStorage.setItem('pcr_master_db', JSON.stringify(db));
+        localStorage.setItem('pcr_sys_sync', Date.now());
+    }
+</script>
+</body>
+</html>
