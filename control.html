@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PCR Esports Master Engine</title>
+    <style>
+        :root { --base-offwhite: #f4f4f6; --teal-bright: #00b4d8; --yellow-light: #ffb703; --black-pure: #121214; }
+        body { margin: 0; padding: 0; overflow: hidden; background: transparent; font-family: 'Segoe UI', Arial, sans-serif; font-weight: bold; }
+        
+        .overlay-mode { display: block; width: 500px; padding: 10px; box-sizing: border-box; }
+        .row-item { display: grid; grid-template-columns: 45px 40px 180px 120px 60px; align-items: center; padding: 6px 0; font-size: 20px; text-shadow: 2px 2px 4px #000000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; color: #ffffff; }
+        .logo-box { width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .logo-box img { width: 100%; height: 100%; object-fit: cover; }
+        .bar-container { display: flex; gap: 5px; justify-content: center; }
+        .v-bar { width: 8px; height: 22px; border-radius: 1px; }
+        .bar-alive { background-color: #00b4d8; box-shadow: 0 0 6px #00b4d8; }
+        .bar-knock { background-color: #ff1744; box-shadow: 0 0 10px #ff1744; animation: flash 0.5s infinite alternate; }
+        .bar-dead { background-color: #78909c; opacity: 0.3; }
+        .txt-name { text-align: left; padding-left: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .txt-kills { color: #ffb703; text-align: center; }
+        @keyframes flash { from { opacity: 1; } to { opacity: 0.2; } }
+
+        .admin-mode { display: none; background-color: var(--base-offwhite); background-image: radial-gradient(rgba(0, 180, 216, 0.08) 1px, transparent 0); background-size: 24px 24px; color: var(--black-pure); min-height: 100vh; font-weight: normal; }
+        .top-bar { background: var(--black-pure); color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .main-layout { display: flex; padding: 20px; gap: 20px; }
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 20px; flex: 1; }
+        .team-card { background: #ffffff; border: 2px solid #e1e1e6; border-radius: 6px; padding: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+        .team-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4f4f6; padding-bottom: 8px; }
+        .team-header input { font-size: 16px; font-weight: bold; border: none; width: 60%; }
+        .player-row { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
+        .status-grp button { border: 1px solid #e1e1e6; background: #ffffff; padding: 6px 10px; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        .status-grp .btn-a.active { background: #2e7d32; color: white; }
+        .status-grp .btn-k.active { background: #c62828; color: white; }
+        .status-grp .btn-d.active { background: #78909c; color: white; }
+        .points-box { display: flex; gap: 5px; align-items: center; background: var(--base-offwhite); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .pts-btn { background: #ffffff; border: 1px solid #e1e1e6; width: 22px; height: 22px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div id="obsView" class="overlay-mode">
+        <div id="renderContainer"></div>
+    </div>
+
+    <div id="adminView" class="admin-mode">
+        <div class="top-bar">
+            <div style="font-weight:bold; color:var(--teal-bright);">PCR MASTER DASHBOARD</div>
+            <div style="font-size:14px; opacity:0.8;">Admin Mode Active</div>
+        </div>
+        <div class="main-layout">
+            <div class="grid-container" id="cardsGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        let db = [];
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const isAdmin = urlParams.get('mode') === 'admin';
+
+        function initSystem() {
+            let cached = localStorage.getItem('pcr_master_db');
+            if (cached) { db = JSON.parse(cached); } else {
+                for(let i=1; i<=20; i++) {
+                    db.push({
+                        slot: i, name: "Team " + i, logo: "", kills: 0, rosters: 4,
+                        status: ["alive", "alive", "alive", "alive"]
+                    });
+                }
+                save();
+            }
+
+            if (isAdmin) {
+                document.getElementById('obsView').style.display = "none";
+                document.getElementById('adminView').style.display = "block";
+                document.body.style.overflow = "auto";
+                renderAdminGrid();
+            } else {
+                drawOverlayView();
+            }
+        }
+
+        function save() {
+            localStorage.setItem('pcr_master_db', JSON.stringify(db));
+            localStorage.setItem('pcr_sys_sync', Date.now());
+            if (!isAdmin) drawOverlayView();
+        }
+
+        function renderAdminGrid() {
+            let g = document.getElementById('cardsGrid'); if(!g) return; g.innerHTML = "";
+            db.forEach((team, tIdx) => {
+                let card = document.createElement('div'); card.className = "team-card";
+                card.innerHTML = `
+                    <div class="team-header">
+                        <input type="text" value="${team.name}" onchange="updateName(${tIdx}, this.value)">
+                        <div class="points-box">Finishes: <button class="pts-btn" onclick="addKill(${tIdx},-1)">-</button><span style="color:#d68c00; font-size:14px; padding:0 5px;">${team.kills}</span><button class="pts-btn" onclick="addKill(${tIdx},1)">+</button></div>
+                    </div>
+                    <div style="margin: 8px 0; display:flex; gap:10px;">
+                        <input type="text" placeholder="Logo URL" value="${team.logo}" onchange="updateLogo(${tIdx}, this.value)" style="flex:1; padding:4px; font-size:11px; border:1px solid #e1e1e6; border-radius:4px;">
+                        <select onchange="updateRoster(${tIdx}, this.value)" style="font-size:11px;">
+                            <option value="4" ${team.rosters==4?'selected':''}>4P</option>
+                            <option value="3" ${team.rosters==3?'selected':''}>3P</option>
+                            <option value="2" ${team.rosters==2?'selected':''}>2P</option>
+                            <option value="1" ${team.rosters==1?'selected':''}>1P</option>
+                        </select>
+                    </div>
+                `;
+                for(let p=0; p<team.rosters; p++) {
+                    let st = team.status[p];
+                    card.innerHTML += `
+                        <div class="player-row">
+                            <span style="font-size:13px;">Player ${p+1}</span>
+                            <div class="status-grp">
+                                <button class="btn-a ${st==='alive'?'active':''}" onclick="setState(${tIdx},${p},'alive')">A</button>
+                                <button class="btn-k ${st==='knock'?'active':''}" onclick="setState(${tIdx},${p},'knock')">K</button>
+                                <button class="btn-d ${st==='dead'?'active':''}" onclick="setState(${tIdx},${p},'dead')">D</button>
+                            </div>
+                        </div>
+                    `;
+                }
+                g.appendChild(card);
+            });
+        }
+
+        function updateName(idx, val) { db[idx].name = val || "Team " + (idx+1); save(); }
+        function updateLogo(idx, val) { db[idx].logo = val; save(); }
+        function updateRoster(idx, val) { db[idx].rosters = parseInt(val); save(); renderAdminGrid(); }
+        function addKill(idx, val) { db[idx].kills = Math.max(0, db[idx].kills + val); save(); renderAdminGrid(); }
+        function setState(tIdx, pIdx, state) { db[tIdx].status[pIdx] = state; save(); renderAdminGrid(); }
+
+        function drawOverlayView() {
+            let container = document.getElementById('renderContainer'); if(!container) return;
+            let cached = localStorage.getItem('pcr_master_db'); if(!cached) return;
+            let currentData = JSON.parse(cached);
+
+            let activeTeams = currentData.filter(t => t.name.trim() !== "");
+            activeTeams.sort((a, b) => b.kills - a.kills);
+
+            container.innerHTML = "";
+            activeTeams.forEach((team, idx) => {
+                let row = document.createElement('div'); row.className = "row-item";
+                let logoMark = team.logo ? `<img src="${team.logo}">` : `<div style="font-size:12px; opacity:0.6;">T${team.slot}</div>`;
+                let barsHtml = "";
+                for(let p = 0; p < team.rosters; p++) {
+                    let st = team.status[p];
+                    if(st === 'alive') barsHtml += `<div class="v-bar bar-alive"></div>`;
+                    else if(st === 'knock') barsHtml += `<div class="v-bar bar-knock"></div>`;
+                    else barsHtml += `<div class="v-bar bar-dead"></div>`;
+                }
+                row.innerHTML = `<div style="text-align:center; color:#ffb703;">#${idx + 1}</div><div class="logo-box">${logoMark}</div><div class="txt-name">${team.name}</div><div class="bar-container">${barsHtml}</div><div class="txt-kills">${team.kills}</div>`;
+                container.appendChild(row);
+            });
+        }
+
+        window.addEventListener('storage', (e) => {
+            if(e.key === 'pcr_sys_sync' && !isAdmin) { drawOverlayView(); }
+        });
+
+        initSystem();
+    </script>
+</body>
+</html>
