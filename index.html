@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <title>OBS प्लेन टेक्स्ट ओवरले</title>
+    <style>
+        body { 
+            background: transparent; 
+            margin: 0; 
+            padding: 0; 
+            color: #ffffff; 
+            font-family: 'Arial', sans-serif; 
+            font-weight: bold; 
+            overflow: hidden; 
+        }
+        .overlay-wrap { 
+            width: 500px; 
+            padding: 10px; 
+            box-sizing: border-box; 
+        }
+        .row-item { 
+            display: grid; 
+            grid-template-columns: 45px 40px 180px 120px 60px; 
+            align-items: center; 
+            padding: 6px 0; 
+            font-size: 20px; 
+            text-shadow: 2px 2px 4px #000000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; 
+            transition: all 0.4s ease-in-out; 
+        }
+        .logo-box { 
+            width: 32px; 
+            height: 32px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            overflow: hidden; 
+        }
+        .logo-box img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+        }
+        .bar-container { 
+            display: flex; 
+            gap: 5px; 
+            justify-content: center; 
+        }
+        .v-bar { 
+            width: 8px; 
+            height: 22px; 
+            border-radius: 1px; 
+        }
+        .bar-alive { 
+            background-color: #00b4d8; 
+            box-shadow: 0 0 6px #00b4d8; 
+        }
+        .bar-knock { 
+            background-color: #ff1744; 
+            box-shadow: 0 0 10px #ff1744; 
+            animation: flash 0.5s infinite alternate; 
+        }
+        .bar-dead { 
+            background-color: #78909c; 
+            opacity: 0.3; 
+        }
+        .txt-name { 
+            text-align: left; 
+            padding-left: 8px; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+        }
+        .txt-kills { 
+            color: #ffb703; 
+            text-align: center; 
+        }
+        @keyframes flash { 
+            from { opacity: 1; } 
+            to { opacity: 0.2; } 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay-wrap" id="renderContainer"></div>
+
+    <script>
+        function drawOverlay() {
+            let raw = localStorage.getItem('pcr_master_db');
+            if(!raw) return;
+            let data = JSON.parse(raw);
+
+            // एक्टिव फ़िल्टर: केवल वही टीमें दिखेंगी जिनका नाम खाली नहीं है
+            let activeTeams = data.filter(t => t.name.trim() !== "");
+
+            // रीयल-टाइम फिनिश/किल्स के आधार पर ऑटो-सॉर्टिंग
+            activeTeams.sort((a, b) => b.kills - a.kills);
+
+            let container = document.getElementById('renderContainer');
+            container.innerHTML = "";
+
+            activeTeams.forEach((team, idx) => {
+                let row = document.createElement('div');
+                row.className = "row-item";
+
+                let logoMark = team.logo ? `<img src="${team.logo}">` : `<div style="font-size:12px; opacity:0.6;">T${team.slot}</div>`;
+                
+                // डायनेमिक रोस्टर के आधार पर डंडे जेनरेट करना
+                let barsHtml = "";
+                for(let p=0; p<team.rosters; p++) {
+                    let st = team.status[p];
+                    if(st === 'alive') barsHtml += `<div class="v-bar bar-alive"></div>`;
+                    else if(st === 'knock') barsHtml += `<div class="v-bar bar-knock"></div>`;
+                    else barsHtml += `<div class="v-bar bar-dead"></div>`;
+                }
+
+                row.innerHTML = `
+                    <div style="text-align:center; color:#ffb703;">#${idx + 1}</div>
+                    <div class="logo-box">${logoMark}</div>
+                    <div class="txt-name">${team.name}</div>
+                    <div class="bar-container">${barsHtml}</div>
+                    <div class="txt-kills">${team.kills}</div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // 0-सेकंड इंस्टेंट लोकल नेटवर्क इवेंट लिसनर
+        window.addEventListener('storage', (e) => {
+            if(e.key === 'pcr_sys_sync') { 
+                drawOverlay(); 
+            }
+        });
+
+        // इनिशियल लोड
+        drawOverlay();
+    </script>
+</body>
+</html>
