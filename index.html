@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>OBS प्लेन टेक्स्ट ओवरले</title>
+    <title>OBS Plain Text Overlay</title>
     <style>
         body { 
             background: transparent; 
@@ -90,10 +90,8 @@
             if(!raw) return;
             let data = JSON.parse(raw);
 
-            // एक्टिव फ़िल्टर: केवल वही टीमें दिखेंगी जिनका नाम खाली नहीं है
             let activeTeams = data.filter(t => t.name.trim() !== "");
 
-            // रीयल-टाइम फिनिश/किल्स के आधार पर ऑटो-सॉर्टिंग
             activeTeams.sort((a, b) => b.kills - a.kills);
 
             let container = document.getElementById('renderContainer');
@@ -105,7 +103,6 @@
 
                 let logoMark = team.logo ? `<img src="${team.logo}">` : `<div style="font-size:12px; opacity:0.6;">T${team.slot}</div>`;
                 
-                // डायनेमिक रोस्टर के आधार पर डंडे जेनरेट करना
                 let barsHtml = "";
                 for(let p=0; p<team.rosters; p++) {
                     let st = team.status[p];
@@ -125,14 +122,12 @@
             });
         }
 
-        // 0-सेकंड इंस्टेंट लोकल नेटवर्क इवेंट लिसनर
         window.addEventListener('storage', (e) => {
             if(e.key === 'pcr_sys_sync') { 
                 drawOverlay(); 
             }
         });
 
-        // इनिशियल लोड
         drawOverlay();
     </script>
 </body>
