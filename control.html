@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PCR Esports Master Engine</title>
+    <style>
+        :root { --base-offwhite: #f4f4f6; --teal-bright: #00b4d8; --yellow-light: #ffb703; --black-pure: #121214; --card-bg: #ffffff; --border-color: #e1e1e6; }
+        body { margin: 0; padding: 0; overflow: hidden; background: transparent; font-family: 'Segoe UI', Arial, sans-serif; font-weight: bold; }
+        .overlay-mode { display: block; width: 500px; padding: 10px; box-sizing: border-box; }
+        .row-item { display: grid; grid-template-columns: 45px 40px 180px 120px 60px; align-items: center; padding: 6px 0; font-size: 20px; text-shadow: 2px 2px 4px #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; color: #ffffff; }
+        .logo-box { width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .logo-box img { width: 100%; height: 100%; object-fit: cover; }
+        .bar-container { display: flex; gap: 5px; justify-content: center; }
+        .v-bar { width: 8px; height: 22px; border-radius: 1px; }
+        .bar-alive { background-color: #00b4d8; box-shadow: 0 0 4px #00b4d8; }
+        .bar-knock { background-color: #ff1744; box-shadow: 0 0 4px #ff1744; }
+        .bar-dead { background-color: #78909c; opacity: 0.3; }
+        .txt-name { text-align: left; padding-left: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .txt-kills { color: #ffb703; text-align: center; }
+        .admin-mode { display: none; background-color: var(--base-offwhite); background-image: radial-gradient(rgba(0, 180, 216, 0.08) 1px, transparent 0); background-size: 24px 24px; color: var(--black-pure); min-height: 100vh; overflow-y: auto; position: relative; font-weight: normal; }
+        .admin-mode::before { content: "🕹️ 📱 🖥️ 🎮"; position: fixed; bottom: 20px; right: 20px; font-size: 80px; opacity: 0.03; pointer-events: none; }
+        .top-bar { background: var(--black-pure); color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .hub-container { max-width: 800px; margin: 50px auto; padding: 20px; }
+        .hub-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .hub-btn { background: #fff; border: 2px solid var(--border-color); border-radius: 8px; padding: 25px; font-size: 18px; font-weight: bold; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .hub-btn:hover { border-color: var(--teal-bright); transform: translateY(-2px); }
+        .window-section { display: none; max-width: 900px; margin: 30px auto; background: #fff; border: 2px solid var(--border-color); border-radius: 8px; padding: 20px; }
+        .btn-ui { padding: 8px 16px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-teal { background: var(--teal-bright); color: var(--black-pure); }
+        .btn-black { background: var(--black-pure); color: white; }
+        .btn-red { background: #ff1744; color: white; }
+        .wizard-form-row { display: grid; grid-template-columns: 50px 1fr 1fr 120px; gap: 10px; align-items: center; margin-bottom: 8px; background: var(--base-offwhite); padding: 6px; border-radius: 4px; }
+        .wizard-form-row input, .wizard-form-row select { padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; width: 100%; box-sizing: border-box; }
+        .custom-file-btn { background: #e1e1e6; padding: 6px 10px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        .compact-container { display: none; padding: 15px; height: 100vh; box-sizing: border-box; background: var(--base-offwhite); overflow: hidden; }
+        .compact-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; height: calc(100% - 50px); }
+        .compact-card { background: #fff; border: 1px solid var(--border-color); border-radius: 4px; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; overflow: hidden; }
+        .matrix-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: var(--base-offwhite); padding: 4px; border-radius: 3px; text-align: center; margin: 4px 0; }
+        .matrix-box { display: flex; flex-direction: column; font-size: 9px; color: #555; font-weight: bold; }
+        .matrix-val { font-size: 11px; color: #000; }
+        .c-stat-line { display: flex; justify-content: space-between; align-items: center; font-size: 11px; margin-top: 2px; }
+        .c-btn-grp button { border: 1px solid var(--border-color); background: #fff; padding: 1px 4px; font-size: 9px; font-weight: bold; cursor: pointer; }
+        .c-btn-grp .c-btn-a.active { background: #2e7d32; color: white; }
+        .c-btn-grp .c-btn-k.active { background: #ff1744; color: white; }
+        .c-btn-grp .c-btn-d.active { background: #78909c; color: white; }
+        .c-pts-btn { background: #fff; border: 1px solid var(--border-color); width: 16px; height: 16px; font-size: 10px; cursor: pointer; font-weight: bold; }
+        .math-popup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(18,18,20,0.98); display: flex; justify-content: center; align-items: center; z-index: 2000; }
+        .box-inner { background: #fff; padding: 25px; border-radius: 8px; width: 320px; text-align: center; border: 1px solid var(--border-color); }
+    </style>
+    <script src="https://gstatic.com"></script>
+    <script src="https://gstatic.com"></script>
+</head>
+<body>
+    <div id="obsView" class="overlay-mode"><div id="renderContainer"></div></div>
+    <div id="adminView" class="admin-mode">
+        <div class="top-bar">
+            <div style="font-weight:bold; color:var(--teal-bright);">PCR GALAXY ENGINE</div>
+            <div style="font-size:13px; color:#4caf50; font-weight:bold;">Cloud Status: Online</div>
+        </div>
+        <div class="hub-container" id="hubMenuScreen">
+            <h2 style="text-align:center; text-transform:uppercase; border-bottom:2px solid var(--teal-bright); padding-bottom:8px;">Control Hub</h2>
+            <div class="hub-grid">
+                <button class="hub-btn" onclick="openWindow('wizardSection')"><span>➕</span><span>New Match Setup</span></button>
+                <button class="hub-btn" onclick="openCurrentMatch()"><span>🎮</span><span>Current Live Match</span></button>
+                <button class="hub-btn" onclick="openWindow('contactsSection')"><span>📇</span><span>Official Contacts</span></button>
+                <button class="hub-btn" onclick="openWindow('settingsSection')"><span>⚙️</span><span>System Settings</span></button>
+            </div>
+        </div>
+        <div class="window-section" id="wizardSection">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; margin-bottom:15px;">
+                <h3>Configuration Wizard</h3><button class="btn-ui btn-black" onclick="closeToHub()">Back to Hub</button>
+            </div>
+            <div style="background:#fffbec; border:1px dashed var(--yellow-light); padding:10px; border-radius:6px; margin-bottom:15px; display:flex; gap:15px; align-items:center;">
+                <strong>🧮 Point System Builder:</strong>
+                <select id="formulaSelect" onchange="document.getElementById('multBox').style.display=(this.value==='multiplier')?'flex':'none'">
+                    <option value="standard">Standard: Finishes + Placement</option>
+                    <option value="multiplier">Custom Multiplier Rules</option>
+                </select>
+                <div id="multBox" style="display:none; gap:5px; align-items:center;">
+                    <span>Finish ×</span><input type="number" id="fMult" value="1" style="width:40px;">
+                    <span>Place ×</span><input type="number" id="pMult" value="1" style="width:40px;">
+                </div>
+            </div>
+            <div style="margin-bottom:15px;">
+                <label><strong>Lobby Size:</strong></label>
+                <select id="lobbySizeSelect" onchange="generateWizardRows()">
+                    <option value="20">20 Teams</option><option value="16">16 Teams</option><option value="12">12 Teams</option><option value="8">8 Teams</option>
+                </select>
+            </div>
+            <div id="wizardRowsContainer" style="max-height:300px; overflow-y:auto; margin-bottom:15px; border:1px solid #eee; padding:10px;"></div>
+            <button class="btn-ui btn-teal" style="width:100%; padding:12px;" onclick="launchMatch()">🚀 START LIVE BROADCAST</button>
+        </div>
+        <div class="window-section" id="contactsSection">
+            <h3>System Owner Profile</h3>
+            <p><strong>Owner Name:</strong> Jiv</p><p><strong>Instagram:</strong> @pcresports_official</p>
+            <button class="btn-ui btn-black" onclick="closeToHub()">Back to Hub</button>
+        </div>
+        <div class="window-section" id="settingsSection">
+            <h3>System Settings</h3>
+            <div style="background:#eee; padding:10px; margin-bottom:15px;">
+                <h4>🤝 Temp Token Access</h4>
+                <button class="btn-ui btn-teal" onclick="genToken()">Generate</button> <button class="btn-ui btn-red" onclick="killToken()">Kill</button>
+                <div id="tokenView" style="margin-top:5px; font-family:monospace;"></div>
+            </div>
+            <div style="background:#eee; padding:10px;">
+                <h4>🔐 Quad-Lock Password Override</h4>
+                <input type="password" id="op1" placeholder="Old Pass 1"> <input type="password" id="op2" placeholder="Old Pass 2"><br><br>
+                <input type="password" id="np1" placeholder="New Pass 1"> <input type="password" id="np2" placeholder="New Pass 2"><br><br>
+                <button class="btn-ui btn-black" onclick="changePass()">Update Password</button>
+            </div>
+            <button class="btn-ui btn-black" style="margin-top:15px;" onclick="closeToHub()">Back to Hub</button>
+        </div>
+        <div class="compact-container" id="liveMatchControlScreen">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div><button class="btn-ui btn-black" onclick="closeToHub()">🔙 BACK</button> <button class="btn-ui btn-teal" onclick="showInfo()">ℹ️ INFO</button></div>
+                <div id="liveTitle" style="font-weight:bold;">LIVE CONTROLLER</div>
+                <button class="btn-ui btn-red" onclick="askAbort()">🚨 CLOSE MATCH</button>
+            </div>
+            <div class="compact-grid" id="compactGridContainer"></div>
+        </div>
+    </div>
+    <div id="mathLock" class="math-popup" style="display:none;">
+        <div class="box-inner">
+            <h3>Security Verification</h3>
+            <p id="mathExp" style="font-size:24px; color:var(--yellow-light); font-weight:bold;"></p>
+            <input type="number" id="mathAns" placeholder="Answer">
+            <button class="btn-ui btn-red" style="width:100%; margin-top:10px;" onclick="confirmAbort()">CONFIRM CLOSE</button>
+            <button class="btn-ui btn-black" style="width:100%; margin-top:5px;" onclick="document.getElementById('mathLock').style.display='none'">CANCEL</button>
+        </div>
+    </div>
+    <script>
+        const firebaseURL = "https://points-tables-95864-default-rtdb.firebaseio.com/";
+
+        firebase.initializeApp({ databaseURL: firebaseURL });
+        const rdb = firebase.database();
+        let state = { running: false, size: 20, mode: "standard", fM: 1, pM: 1, list: [] };
+        let lockAns = 0;
+        const isAdmin = new URLSearchParams(window.location.search).get('mode') === 'admin';
+
+        function init() {
+            rdb.ref('pcr_state').on('value', (snap) => {
+                let data = snap.val();
+                if (data) { state = data; } else { resetState(); }
+                if (isAdmin) {
+                    document.getElementById('obsView').style.display = "none";
+                    document.getElementById('adminView').style.display = "block";
+                    if(!state.running) {
+                        document.getElementById('hubMenuScreen').style.display = "block";
+                        document.getElementById('liveMatchControlScreen').style.display = "none";
+                    } else {
+                        document.getElementById('hubMenuScreen').style.display = "none";
+                        document.getElementById('liveMatchControlScreen').style.display = "block";
+                        renderGrid();
+                    }
+                    generateWizardRows();
+                } else {
+                    document.getElementById('obsView').style.display = "block";
+                    document.getElementById('adminView').style.display = "none";
+                    renderOverlay();
+                }
+            });
+        }
+
+        function resetState() {
+            state = { running: false, size: 20, mode: "standard", fM: 1, pM: 1, list: [] };
+            for(let i=1; i<=20; i++) {
+                state.list.push({ slot: i, name: i + " Team Name", logo: "", finishes: 0, placement: 0, total: 0, rosters: 4, status: ["alive","alive","alive","alive"], active: false });
+            }
+            rdb.ref('pcr_state').set(state);
+        }
+
+        function openWindow(id) { hideAll(); document.getElementById(id).style.display = "block"; }
+        function closeToHub() { hideAll(); document.getElementById('hubMenuScreen').style.display = "block"; }
+        function hideAll() { document.getElementById('hubMenuScreen').style.display = "none"; document.getElementById('wizardSection').style.display = "none"; document.getElementById('contactsSection').style.display = "none"; document.getElementById('settingsSection').style.display = "none"; document.getElementById('liveMatchControlScreen').style.display = "none"; }
+        function openCurrentMatch() { if(!state.running){ alert("No Match Live!"); return; } openWindow('liveMatchControlScreen'); }
+
+        function generateWizardRows() {
+            let c = document.getElementById('wizardRowsContainer'); if(!c) return;
+            let sz = parseInt(document.getElementById('lobbySizeSelect').value); c.innerHTML = "";
+            for(let i=0; i<sz; i++) {
+                let team = state.list[i] || { name: (i+1) + " Team Name", logo: "", rosters: 4 };
+                let r = document.createElement('div'); r.className = "wizard-form-row";
+                r.innerHTML = `<div># ${i+1}</div><div><input type="text" id="wN-${i}" value="${team.name}"></div>
+                               <div style="display:flex;gap:2px;"><input type="text" id="wL-${i}" value="${team.logo}" placeholder="URL"><label class="custom-file-btn" for="f-${i}">Local</label><input type="file" id="f-${i}" style="display:none;" onchange="conv(this,${i})"></div>
+                               <div><select id="wR-${i}"><option value="4" ${team.rosters==4?'selected':''}>4P</option><option value="3" ${team.rosters==3?'selected':''}>3P</option><option value="2" ${team.rosters==2?'selected':''}>2P</option><option value="1" ${team.rosters==1?'selected':''}>1P</option></select></div>`;
+                c.appendChild(r);
+            }
+        }
+
+        function conv(input, idx) {
+            if(!input.files || !input.files) return;
+            if(input.files.size > 102400) { alert("File must be < 100KB!"); return; }
+            let fr = new FileReader(); fr.onload = (e) => { document.getElementById(`wL-${idx}`).value = e.target.result; };
+            fr.readAsDataURL(input.files);
+        }
+
+        function launchMatch() {
+            let sz = parseInt(document.getElementById('lobbySizeSelect').value);
+            state.size = sz; state.mode = document.getElementById('formulaSelect').value;
+            state.fM = parseFloat(document.getElementById('fMult').value) || 1;
+            state.pM = parseFloat(document.getElementById('pMult').value) || 1;
+            for(let i=0; i<20; i++) {
+                if(i < sz) {
+                    state.list[i].name = document.getElementById(`wN-${i}`).value || (i+1) + " Team Name";
+                    state.list[i].logo = document.getElementById(`wL-${i}`).value;
+                    state.list[i].rosters = parseInt(document.getElementById(`wR-${i}`).value);
+                    state.list[i].finishes = 0; state.list[i].placement = 0; state.list[i].total = 0; state.list[i].active = true;
+                    state.list[i].status = Array(state.list[i].rosters).fill("alive");
+                } else { state.list[i].active = false; }
+            }
+            state.running = true; rdb.ref('pcr_state').set(state);
+        }
+
+        function calc(t) { t.total = (state.mode === "standard") ? (t.finishes + t.placement) : ((t.finishes * state.fM) + (t.placement * state.pM)); }
+        function mod(idx, field, val) { let t = state.list[idx]; if(field==='finishes') t.finishes = Math.max(0, t.finishes+val); else t.placement = Math.max(0, t.placement+val); calc(t); rdb.ref('pcr_state').set(state); }
+        function pSt(tIdx, pIdx, val) { state.list[tIdx].status[pIdx] = val; rdb.ref('pcr_state').set(state); }
+
+        function renderGrid() {
+            let g = document.getElementById('compactGridContainer'); if(!g) return; g.innerHTML = "";
+            state.list.forEach((t, tIdx) => {
+                if(!t.active) return;
+                let c = document.createElement('div'); c.className = "compact-card";
+                let lg = t.logo ? `<img class="c-logo" src="${t.logo}" style="width:16px;height:16px;object-fit:cover;">` : `<div style="font-size:9px;background:#ccc;width:16px;height:16px;text-align:center;line-height:16px;">T</div>`;
+                c.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;font-size:11px;"><div style="display:flex;align-items:center;gap:3px;width:60%;overflow:hidden;">${lg}<span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;">${t.name}</span></div><strong>Slot ${t.slot}</strong></div>
+                    <div class="matrix-row">
+                        <div class="matrix-box"><span>F</span><span class="matrix-val">${t.finishes}</span></div>
+                        <div class="matrix-box"><span>P</span><span class="matrix-val">${t.placement}</span></div>
+                        <div class="matrix-box" style="color:#d68c00;"><span>T</span><span class="matrix-val">${t.total}</span></div>
+                    </div>
+                    <div class="c-stat-line"><span>Finishes:</span><div style="display:flex;gap:2px;"><button class="c-pts-btn" onclick="mod(${tIdx},'finishes',-1)">-</button><button class="c-pts-btn" onclick="mod(${tIdx},'finishes',1)">+</button></div></div>
+                    <div class="c-stat-line"><span>Placement:</span><div style="display:flex;gap:2px;"><button class="c-pts-btn" onclick="mod(${tIdx},'placement',-1)">-</button><button class="c-pts-btn" onclick="mod(${tIdx},'placement',1)">+</button></div></div>
+                    <div id="rost-${tIdx}" style="margin-top:2px;border-top:1px dashed #eee;"></div>`;
+                g.appendChild(c);
+                let rb = document.getElementById(`rost-${tIdx}`);
+                for(let p=0; p<t.rosters; p++) {
+                    let st = t.status[p] || "alive";
+                    let row = document.createElement('div'); row.className = "c-stat-line";
+                    row.innerHTML = `<span style="font-size:9px;">P${p+1}</span><div class="c-btn-grp">
+                        <button class="c-btn-a ${st==='alive'?'active':''}" onclick="pSt(${tIdx},${p},'alive')">A</button>
+                        <button class="c-btn-k ${st==='knock'?'active':''}" onclick="pSt(${tIdx},${p},'knock')">K</button>
+                        <button class="c-btn-d ${st==='dead'?'active':''}" onclick="pSt(${tIdx},${p},'dead')">D</button></div>`;
+                    rb.appendChild(row);
+                }
+            });
+        }
+
+        function showInfo() { alert(state.mode==='standard' ? "Formula: Finishes + Placement" : `Formula: (Finishes * ${state.fM}) + (Placement * ${state.pM})`); }
+        function askAbort() { let v1 = Math.floor(Math.random()*8)+3, v2 = Math.floor(Math.random()*8)+2; lockAns = v1+v2; document.getElementById('mathExp').innerText = `${v1} + ${v2} = ?`; document.getElementById('mathLock').style.display = "flex"; }
+        function confirmAbort() { if(parseInt(document.getElementById('mathAns').value)===lockAns) { resetState(); document.getElementById('mathLock').style.display="none"; } else { alert("Wrong!"); } }
+
+        function changePass() {
+                    <div class="c-stat-line"><span>Placement:</span><div style="display:flex;gap:2px;"><button class="c-pts-btn" onclick="mod(${tIdx},'placement',-1)">-</button><button class="c-pts-btn" onclick="mod(${tIdx},'placement',1)">+</button></div></div>
+                    <div id="rost-${tIdx}" style="margin-top:2px;border-top:1px dashed #eee;"></div>`;
+                g.appendChild(c);
+                let rb = document.getElementById(`rost-${tIdx}`);
+                for(let p=0; p<t.rosters; p++) {
+                    let st = t.status[p] || "alive";
+                    let row = document.createElement('div'); row.className = "c-stat-line";
+                    row.innerHTML = `<span style="font-size:9px;">P${p+1}</span><div class="c-btn-grp">
+                        <button class="c-btn-a ${st==='alive'?'active':''}" onclick="pSt(${tIdx},${p},'alive')">A</button>
+                        <button class="c-btn-k ${st==='knock'?'active':''}" onclick="pSt(${tIdx},${p},'knock')">K</button>
+                        <button class="c-btn-d ${st==='dead'?'active':''}" onclick="pSt(${tIdx},${p},'dead')">D</button></div>`;
+                    rb.appendChild(row);
+                }
+            });
+        }
+
+        function showInfo() { alert(state.mode==='standard' ? "Formula: Finishes + Placement" : `Formula: (Finishes * ${state.fM}) + (Placement * ${state.pM})`); }
+        function askAbort() { let v1 = Math.floor(Math.random()*8)+3, v2 = Math.floor(Math.random()*8)+2; lockAns = v1+v2; document.getElementById('mathExp').innerText = `${v1} + ${v2} = ?`; document.getElementById('mathLock').style.display = "flex"; }
+        function confirmAbort() { if(parseInt(document.getElementById('mathAns').value)===lockAns) { resetState(); document.getElementById('mathLock').style.display="none"; } else { alert("Wrong!"); } }
+
+        function changePass() {
+            let o1=document.getElementById('op1').value, o2=document.getElementById('op2').value, n1=document.getElementById('np1').value, n2=document.getElementById('np2').value;
+            let cur = localStorage.getItem('pcr_master_pass') || 'bgmi2026';
+            if(o1!==o2 || n1!==n2) { alert("Inputs Mismatch!"); return; }
+            if(o1!==cur) { alert("Incorrect Current Pass!"); return; }
+            localStorage.setItem('pcr_master_pass', n1); alert("Password Overridden!");
+        }
+
+        function genToken() { let u="op"+Math.floor(100+Math.random()*900), p="pwd"+Math.floor(100+Math.random()*900); localStorage.setItem('pcr_tok', JSON.stringify({u:u, p:p, exp:Date.now()+86400000})); document.getElementById('tokenView').innerText=`ID: ${u} | PWD: ${p}`; }
+        function killToken() { localStorage.removeItem('pcr_tok'); document.getElementById('tokenView').innerText="Tokens Terminated."; }
+
+        function renderOverlay() {
+            let container = document.getElementById('renderContainer'); if(!container || !state.running) { container.innerHTML=""; return; }
+            let visible = state.list.filter(t => t.active === true);
+            visible.sort((a, b) => b.total - a.total); container.innerHTML = "";
+            visible.forEach((team, idx) => {
+                let row = document.createElement('div'); row.className = "row-item";
+                let lg = team.logo ? `<img src="${team.logo}">` : `<div style="font-size:11px; opacity:0.5;">T${team.slot}</div>`;
+                let bars = "";
+                for(let p = 0; p < team.rosters; p++) {
+                    let s = team.status[p] || "alive";
+                    if(s === 'alive') bars += `<div class="v-bar bar-alive"></div>`;
+                    else if(s === 'knock') bars += `<div class="v-bar bar-knock"></div>`;
+                    else bars += `<div class="v-bar bar-dead"></div>`;
+                }
+                row.innerHTML = `<div style="text-align:center; color:#ffb703;">#${idx + 1}</div><div class="logo-box">${lg}</div><div class="txt-name">${team.name}</div><div class="bar-container">${bars}</div><div class="txt-kills">${team.total}</div>`;
+                container.appendChild(row);
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
